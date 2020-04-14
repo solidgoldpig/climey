@@ -52,21 +52,6 @@ const mapExplicitAssessment = (person, field, assessmentCategories) => {
   return value
 }
 
-const mapAssessment = (person, field, assessmentCategories) => {
-  let value
-  const assessments = getAssessments(person)
-  const matchedAnswer = getAnswer(assessments, field)
-
-  if (matchedAnswer) {
-    const questionId = matchedAnswer.assessment_question_id
-    value = matchedAnswer.comments
-    const category = matchedAnswer.category
-    assessmentCategories[category] = assessmentCategories[category] || []
-    assessmentCategories[category].push(questionId)
-  }
-  return value
-}
-
 const mapField = (
   person,
   fields = [],
@@ -87,8 +72,6 @@ const mapField = (
       value = mapDate(person, field)
     } else if (explicitAssessmentKeys.includes(field)) {
       value = mapExplicitAssessment(person, field, assessmentCategories)
-    } else if (assessmentKeys.includes(field)) {
-      value = mapAssessment(person, field, assessmentCategories)
     } else {
       value = person[field]
     }
