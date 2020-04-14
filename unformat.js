@@ -8,7 +8,9 @@ const getAnswer = (assessments, field) => {
   })[0]
 }
 
-const mapIdentifier = (person, field) => {
+const mapMethods = {}
+
+mapMethods.identifier = (person, field) => {
   const identifiers = person.identifiers || []
   const identifier = identifiers.filter(
     identifier => identifier.identifier_type === field
@@ -18,14 +20,14 @@ const mapIdentifier = (person, field) => {
   }
 }
 
-const mapRelationship = (person, field) => {
+mapMethods.relationship = (person, field) => {
   const relationship = person[field]
   if (relationship) {
     return relationship.id
   }
 }
 
-const mapDate = (person, field) => {
+mapMethods.date = (person, field) => {
   const fieldValue = person[field]
   if (fieldValue) {
     return formatDate(fieldValue)
@@ -36,7 +38,7 @@ const getAssessments = person => {
   return person.assessment_answers || []
 }
 
-const mapExplicitAssessment = (person, field, assessmentCategories) => {
+mapMethods.explicitAssessment = (person, field, assessmentCategories) => {
   let value
   const assessments = getAssessments(person)
   const matchedAnswer = getAnswer(assessments, field)
@@ -52,41 +54,30 @@ const mapExplicitAssessment = (person, field, assessmentCategories) => {
   return value
 }
 
-const mapField = (
-  person,
-  fields = [],
-  {
-    identifierKeys = [],
-    relationshipKeys = [],
-    dateKeys = [],
-    explicitAssessmentKeys = [],
-    assessmentKeys = [],
-  } = {},
-  assessmentCategories) => {
-    let value
-    if (identifierKeys.includes(field)) {
-      value = mapIdentifier(person, field)
-    } else if (relationshipKeys.includes(field)) {
-      value = mapRelationship(person, field)
-    } else if (dateKeys.includes(field)) {
-      value = mapDate(person, field)
-    } else if (explicitAssessmentKeys.includes(field)) {
-      value = mapExplicitAssessment(person, field, assessmentCategories)
-    } else {
-      value = person[field]
-    }
-    return value
-  }
+mapMethods.assessment = (person, field, assessmentCategories) => {
+  let value
+  const assessments = getAssessments(person)
+  const matchedAnswer = getAnswer(assessments, field)
 
-const unformat = (
-  person,
-  fields = [],
-  keys
-) => {
+  if (matchedAnswer) {
+    const questionId = matchedAnswer.assessment_question_id
+    value = matchedAnswer.comments
+    const category = matchedAnswer.category
+    assessmentCategories[category] = assessmentCategories[category] || []
+    assessmentCategories[category].push(questionId)
+  }
+  return value
+}
+
+mapMethods.value = (person, field) => person[field]
+
+const mapKeys = Object.keys(mapMethods)
+const unformat = (person, fields = [], fieldKeys = {}) => {
   const assessmentCategories = {}
 
   const fieldData = fields.map(field => {
-    let value = mapField(person, fields, keys, assessmentCategories)
+    const method = mapKeys.filter(key => fieldKeys[key].includes(field))[0] || 'value'
+    const value = mapMethods(method)(person, field, assessmentCategories)
     return { [field]: value }
   })
   return Object.assign({}, ...fieldData, assessmentCategories)
