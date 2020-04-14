@@ -70,13 +70,11 @@ const mapAssessment = (person, field, assessmentCategories) => {
 const unformat = (
   person,
   fields = [],
-  {
-    identifierKeys = [],
-    relationshipKeys = [],
-    dateKeys = [],
-    explicitAssessmentKeys = [],
-    assessmentKeys = [],
-  } = {}
+  identifierKeys = [],
+  relationshipKeys = [],
+  dateKeys = [],
+  explicitAssessmentKeys = [],
+  assessmentKeys = [],
 ) => {
   const assessmentCategories = {}
 
