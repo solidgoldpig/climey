@@ -67,18 +67,17 @@ const mapAssessment = (person, field, assessmentCategories) => {
   return value
 }
 
-const unformat = (
+const mapField = (
   person,
   fields = [],
-  identifierKeys = [],
-  relationshipKeys = [],
-  dateKeys = [],
-  explicitAssessmentKeys = [],
-  assessmentKeys = [],
-) => {
-  const assessmentCategories = {}
-
-  const fieldData = fields.map(field => {
+  {
+    identifierKeys = [],
+    relationshipKeys = [],
+    dateKeys = [],
+    explicitAssessmentKeys = [],
+    assessmentKeys = [],
+  } = {},
+  assessmentCategories) => {
     let value
     if (identifierKeys.includes(field)) {
       value = mapIdentifier(person, field)
@@ -93,6 +92,18 @@ const unformat = (
     } else {
       value = person[field]
     }
+    return value
+  }
+
+const unformat = (
+  person,
+  fields = [],
+  keys
+) => {
+  const assessmentCategories = {}
+
+  const fieldData = fields.map(field => {
+    let value = mapField(person, fields, keys, assessmentCategories)
     return { [field]: value }
   })
   return Object.assign({}, ...fieldData, assessmentCategories)
